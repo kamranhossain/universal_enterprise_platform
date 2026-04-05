@@ -65,7 +65,8 @@ defmodule UniversalEnterprisePlatform.MixProject do
       {:gettext, "~> 1.0"},
       {:jason, "~> 1.4"},
       {:dns_cluster, "~> 0.2.0"},
-      {:bandit, "~> 1.10"}
+      {:bandit, "~> 1.10"},
+      {:credo, "~> 1.7", only: [:dev, :test], runtime: false}
     ]
   end
 
