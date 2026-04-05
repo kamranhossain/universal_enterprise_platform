@@ -5,7 +5,7 @@ import Config
 # The MIX_TEST_PARTITION environment variable can be used
 # to provide built-in test partitioning in CI environment.
 # Run `mix help test` for more information.
-config :universal_enterprise_platform, UniversalEnterprisePlatform.Repo,
+config :universal_enterprise_platform, UniversalEnterprisePlatform.Infrastructure.Repos.Repo,
   username: System.get_env("DB_USER") || "postgres",
   password: System.get_env("DB_PASSWORD") || "",
   hostname: "localhost",

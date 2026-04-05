@@ -8,7 +8,7 @@
 import Config
 
 config :universal_enterprise_platform,
-  ecto_repos: [UniversalEnterprisePlatform.Repo],
+  ecto_repos: [UniversalEnterprisePlatform.Infrastructure.Repos.Repo],
   generators: [timestamp_type: :utc_datetime]
 
 # Configure the endpoint
