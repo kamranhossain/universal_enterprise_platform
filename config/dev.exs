@@ -2,8 +2,8 @@ import Config
 
 # Configure your database
 config :universal_enterprise_platform, UniversalEnterprisePlatform.Infrastructure.Repos.Repo,
-  username: System.get_env("DB_USER") || "postgres",
-  password: System.get_env("DB_PASSWORD") || "postgres",
+  username: System.get_env("DB_USER") || "postgresql",
+  password: System.get_env("DB_PASSWORD") || "postgresql",
   hostname: "localhost",
   database: "universal_enterprise_platform_dev",
   stacktrace: true,
