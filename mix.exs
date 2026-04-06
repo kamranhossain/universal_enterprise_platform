@@ -40,15 +40,51 @@ defmodule UniversalEnterprisePlatform.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
-      {:phoenix, "~> 1.8.5"},
-      {:phoenix_ecto, "~> 4.7"},
+      # ── Data layer ─────────────────────────────────────────────
       {:ecto_sql, "~> 3.13"},
+      {:phoenix_ecto, "~> 4.7"},
       {:postgrex, "~> 0.22.0"},
-      {:phoenix_html, "~> 4.3"},
-      {:phoenix_live_reload, "~> 1.6", only: :dev},
+      # StarRocks MySQL wire
+      {:myxql, "~> 0.8.1"},
+      {:pgvector, "~> 0.3.1"},
+
+      # ── Financial ledger ────────────────────────────────────────
+      {:tigerbeetlex, "~> 0.16.78"},
+
+      # ── Authorization ───────────────────────────────────────────
+      # SpiceDB gRPC client
+      {:authzed, "~> 1.6"},
+      # gRPC transport for authzed
+      {:grpc, "~> 0.10.0"},
+
+      # ── Cache ───────────────────────────────────────
+      {:redix, "~> 1.5"},
+
+      # ── Messaging / Streaming ────────────────────────────────────────────────
+      {:broadway, "~> 1.2"},
+      # BroadwayKafka producer
+      {:broadway_kafka, "~> 0.4.4"},
+      # Kafka client (used by broadway_kafka)
+      {:brod, "~> 4.5"},
+      # LiveDashboard inspecting Broadway pipelines
+      {:broadway_dashboard, "~> 0.4.1"},
+      {:phoenix_pubsub, "~> 2.2"},
+
+      # UUID v7
+      {:uniq, "~> 0.6.2"},
+      # Up-to-date CA certificate store
+      {:castore, "~> 1.0"},
+
+      # ── Web ────────────────────────────────────────────────────
+      {:phoenix, "~> 1.8"},
       {:phoenix_live_view, "~> 1.1"},
-      {:lazy_html, "~> 0.1.11", only: :test},
+      {:phoenix_live_reload, "~> 1.6", only: :dev},
+      {:phoenix_html_helpers, "~> 1.0"},
+      {:bandit, "~> 1.10"},
+      {:plug_cowboy, "~> 2.8"},
+      {:phoenix_html, "~> 4.3"},
       {:phoenix_live_dashboard, "~> 0.8.7"},
+      {:lazy_html, "~> 0.1.11", only: :test},
       {:esbuild, "~> 0.10.0", runtime: Mix.env() == :dev},
       {:tailwind, "~> 0.4.1", runtime: Mix.env() == :dev},
       {:heroicons,
@@ -58,15 +94,56 @@ defmodule UniversalEnterprisePlatform.MixProject do
        app: false,
        compile: false,
        depth: 1},
-      {:swoosh, "~> 1.25"},
+
+
+
+      # ── Auth ────────────────────────────────────────────────────
+      {:bcrypt_elixir, "~> 3.3"},
+      {:joken, "~> 2.6"},
+
+      # ── HTTP / utilities ────────────────────────────────────────
       {:req, "~> 0.5.17"},
+      {:jason, "~> 1.4"},
+      {:nimble_options, "~> 1.1"},
+      {:telemetry, "~> 1.4"},
       {:telemetry_metrics, "~> 1.1"},
       {:telemetry_poller, "~> 1.3"},
+
+      # ── Rust NIFs ────────────────────────────────────────────────────────────
+      {:rustler, "~> 0.37"},
+      {:rustler_precompiled, "~> 0.8.4", runtime: false},
+
+      # ── Background Jobs ─────────────────────────────────────────────────────
+      {:oban, "~> 2.20"},
+      # Web UI for Oban (optional)
+      {:oban_web, "~> 2.11"},
+      # Cron-like job scheduler for Elixir
+      {:quantum, "~> 3.5"},
+      # Elixir library for parsing, writing, and calculating Cron format strings.
+      {:crontab, "~> 1.2"},
+
+      # ── Internationalization ──────────────────────────────────────────────────
       {:gettext, "~> 1.0"},
-      {:jason, "~> 1.4"},
+
+
+      # ── Email ──────────────────────────────────────────────────
+      {:swoosh, "~> 1.25"},
+      # ── Cluster ──────────────────────────────────────────────────
+
       {:dns_cluster, "~> 0.2.0"},
-      {:bandit, "~> 1.10"},
-      {:credo, "~> 1.7", only: [:dev, :test], runtime: false}
+
+
+      # ── Boundary — compile-time layer enforcement ───────────────
+      {:boundary, "~> 0.10.4"},
+
+      # ── Dev/test ───────────────────────────────────────────────
+      {:mix_test_watch, "~> 1.4", only: :dev, runtime: false},
+      {:ex_machina, "~> 2.8", only: :test},
+      {:faker, "~> 0.18.0", only: :test},
+      {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
+      {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
+      {:sobelow, "~> 0.14.1", only: [:dev, :test], runtime: false},
+      {:mix_audit, "~> 2.1", only: [:dev, :test], runtime: false}
     ]
   end
 
