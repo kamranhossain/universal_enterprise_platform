@@ -31,7 +31,7 @@ defmodule UniversalEnterprisePlatformWeb.Router do
   # ── Browser / LiveView ────────────────────────────────────────
   scope "/", UniversalEnterprisePlatformWeb do
     pipe_through :browser
-    live "/", DashboardLive, :index
+    live "/dashboard", DashboardLive, :index
   end
 
   # Enable LiveDashboard and Swoosh mailbox preview in development
