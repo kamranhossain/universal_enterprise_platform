@@ -5,7 +5,7 @@ defmodule UniversalEnterprisePlatform.MixProject do
     [
       app: :universal_enterprise_platform,
       version: "0.1.0",
-      elixir: "~> 1.15",
+      elixir: "~> 1.19",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
@@ -95,8 +95,6 @@ defmodule UniversalEnterprisePlatform.MixProject do
        compile: false,
        depth: 1},
 
-
-
       # ── Auth ────────────────────────────────────────────────────
       {:bcrypt_elixir, "~> 3.3"},
       {:joken, "~> 2.6"},
@@ -125,13 +123,11 @@ defmodule UniversalEnterprisePlatform.MixProject do
       # ── Internationalization ──────────────────────────────────────────────────
       {:gettext, "~> 1.0"},
 
-
       # ── Email ──────────────────────────────────────────────────
       {:swoosh, "~> 1.25"},
       # ── Cluster ──────────────────────────────────────────────────
 
       {:dns_cluster, "~> 0.2.0"},
-
 
       # ── Boundary — compile-time layer enforcement ───────────────
       {:boundary, "~> 0.10.4"},
