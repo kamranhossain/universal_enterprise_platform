@@ -1,5 +1,5 @@
-defmodule PlatformWeb.DashboardLive do
-  use PlatformWeb, :live_view
+defmodule UniversalEnterprisePlatformWeb.DashboardLive do
+  use UniversalEnterprisePlatformWeb, :live_view
 
   @impl true
   def mount(_params, _session, socket) do
