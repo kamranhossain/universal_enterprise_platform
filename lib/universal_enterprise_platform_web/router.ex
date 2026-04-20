@@ -23,13 +23,13 @@ defmodule UniversalEnterprisePlatformWeb.Router do
 
   # Other scopes may use custom stacks.
   # ── API v1 ────────────────────────────────────────────────────
-  scope "/api/v1", PlatformWeb.API.V1 do
+  scope "/api/v1", UniversalEnterprisePlatformWeb.API.V1 do
     pipe_through :api
     # Feature routes added per layer as you build them
   end
 
   # ── Browser / LiveView ────────────────────────────────────────
-  scope "/", PlatformWeb do
+  scope "/", UniversalEnterprisePlatformWeb do
     pipe_through :browser
     live "/", DashboardLive, :index
   end
