@@ -18,12 +18,21 @@ defmodule UniversalEnterprisePlatformWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :home
+    get "/health", HealthController, :index
   end
 
   # Other scopes may use custom stacks.
-  # scope "/api", UniversalEnterprisePlatformWeb do
-  #   pipe_through :api
-  # end
+  # ── API v1 ────────────────────────────────────────────────────
+  scope "/api/v1", PlatformWeb.API.V1 do
+    pipe_through :api
+    # Feature routes added per layer as you build them
+  end
+
+  # ── Browser / LiveView ────────────────────────────────────────
+  scope "/", PlatformWeb do
+    pipe_through :browser
+    live "/", DashboardLive, :index
+  end
 
   # Enable LiveDashboard and Swoosh mailbox preview in development
   if Application.compile_env(:universal_enterprise_platform, :dev_routes) do
