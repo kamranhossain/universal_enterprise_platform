@@ -1,4 +1,4 @@
-defmodule Platform.Infrastructure.Flink.CdcConfig do
+defmodule UniversalEnterprisePlatform.Infrastructure.Flink.CdcConfig do
   @moduledoc """
   Flink CDC — connection management and job definitions.
 

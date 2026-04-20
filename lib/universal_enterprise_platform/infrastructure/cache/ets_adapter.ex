@@ -1,4 +1,4 @@
-defmodule Platform.Infrastructure.Cache.EtsAdapter do
+defmodule UniversalEnterprisePlatform.Infrastructure.Cache.EtsAdapter do
   @moduledoc """
   ETS-backed in-process cache. ~1μs reads, no network hop.
 
@@ -7,7 +7,7 @@ defmodule Platform.Infrastructure.Cache.EtsAdapter do
 
   TTL is enforced lazily on read — no background sweep needed for MVP.
   """
-  @behaviour Platform.Infrastructure.Cache.Behaviour
+  @behaviour UniversalEnterprisePlatform.Infrastructure.Cache.Behaviour
 
   use GenServer
 
@@ -21,7 +21,7 @@ defmodule Platform.Infrastructure.Cache.EtsAdapter do
     {:ok, %{}}
   end
 
-  @impl Platform.Infrastructure.Cache.Behaviour
+  @impl UniversalEnterprisePlatform.Infrastructure.Cache.Behaviour
   def get(key) do
     case :ets.lookup(@table, key) do
       [{^key, value, :infinity}] ->
@@ -40,7 +40,7 @@ defmodule Platform.Infrastructure.Cache.EtsAdapter do
     end
   end
 
-  @impl Platform.Infrastructure.Cache.Behaviour
+  @impl UniversalEnterprisePlatform.Infrastructure.Cache.Behaviour
   def put(key, value, ttl_seconds \\ 300) do
     expires_at =
       if ttl_seconds == :infinity,
@@ -51,18 +51,18 @@ defmodule Platform.Infrastructure.Cache.EtsAdapter do
     :ok
   end
 
-  @impl Platform.Infrastructure.Cache.Behaviour
+  @impl UniversalEnterprisePlatform.Infrastructure.Cache.Behaviour
   def delete(key) do
     :ets.delete(@table, key)
     :ok
   end
 
-  @impl Platform.Infrastructure.Cache.Behaviour
+  @impl UniversalEnterprisePlatform.Infrastructure.Cache.Behaviour
   def exists?(key) do
     match?({:ok, _}, get(key))
   end
 
-  @impl Platform.Infrastructure.Cache.Behaviour
+  @impl UniversalEnterprisePlatform.Infrastructure.Cache.Behaviour
   def flush_namespace(namespace) do
     # Match spec: delete all keys starting with "namespace:"
     ms = [

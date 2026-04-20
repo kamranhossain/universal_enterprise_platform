@@ -1,18 +1,18 @@
-defmodule Platform.Infrastructure.Cache.ValkeyAdapter do
+defmodule UniversalEnterprisePlatform.Infrastructure.Cache.ValkeyAdapter do
   @moduledoc """
   Valkey (Redis-compatible) distributed cache via Redix connection pool.
   Cross-node shared state, rate limiting, distributed locks.
 
-  Pool: :valkey_1 .. :valkey_N (started by Platform.Application).
+  Pool: :valkey_1 .. :valkey_N (started by UniversalEnterprisePlatform.Application).
   """
-  @behaviour Platform.Infrastructure.Cache.Behaviour
+  @behaviour UniversalEnterprisePlatform.Infrastructure.Cache.Behaviour
 
   defp conn do
     pool_size = Application.get_env(:core, :valkey_pool_size, 5)
     :"valkey_#{:rand.uniform(pool_size)}"
   end
 
-  @impl Platform.Infrastructure.Cache.Behaviour
+  @impl UniversalEnterprisePlatform.Infrastructure.Cache.Behaviour
   def get(key) do
     case Redix.command(conn(), ["GET", key]) do
       {:ok, nil} -> {:error, :not_found}
@@ -21,7 +21,7 @@ defmodule Platform.Infrastructure.Cache.ValkeyAdapter do
     end
   end
 
-  @impl Platform.Infrastructure.Cache.Behaviour
+  @impl UniversalEnterprisePlatform.Infrastructure.Cache.Behaviour
   def put(key, value, ttl_seconds \\ 300) do
     encoded = Jason.encode!(value)
 
@@ -31,7 +31,7 @@ defmodule Platform.Infrastructure.Cache.ValkeyAdapter do
     end
   end
 
-  @impl Platform.Infrastructure.Cache.Behaviour
+  @impl UniversalEnterprisePlatform.Infrastructure.Cache.Behaviour
   def delete(key) do
     case Redix.command(conn(), ["DEL", key]) do
       {:ok, _} -> :ok
@@ -39,7 +39,7 @@ defmodule Platform.Infrastructure.Cache.ValkeyAdapter do
     end
   end
 
-  @impl Platform.Infrastructure.Cache.Behaviour
+  @impl UniversalEnterprisePlatform.Infrastructure.Cache.Behaviour
   def exists?(key) do
     case Redix.command(conn(), ["EXISTS", key]) do
       {:ok, 1} -> true
@@ -47,7 +47,7 @@ defmodule Platform.Infrastructure.Cache.ValkeyAdapter do
     end
   end
 
-  @impl Platform.Infrastructure.Cache.Behaviour
+  @impl UniversalEnterprisePlatform.Infrastructure.Cache.Behaviour
   def flush_namespace(namespace) do
     with {:ok, keys} <- Redix.command(conn(), ["KEYS", "#{namespace}:*"]),
          true <- keys != [] do

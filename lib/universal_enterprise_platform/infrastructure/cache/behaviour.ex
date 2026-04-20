@@ -1,4 +1,4 @@
-defmodule Platform.Infrastructure.Cache.Behaviour do
+defmodule UniversalEnterprisePlatform.Infrastructure.Cache.Behaviour do
   @callback get(key :: String.t()) ::
               {:ok, any()} | {:error, :not_found} | {:error, any()}
 
