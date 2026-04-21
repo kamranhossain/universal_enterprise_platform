@@ -26,8 +26,10 @@ defmodule UniversalEnterprisePlatform.Infrastructure.Clients.TigerBeetleClient d
   use GenServer
   require Logger
 
-  @port Application.compile_env(:platform, :tigerbeetle_port, 3000)
+  @port Application.compile_env(:platform, :tigerbeetle_port, 3001)
   @cluster_id 0
+
+  alias TigerBeetlex.{Account, AccountFlags, Transfer, TransferFlags}
 
   # ── Client API ─────────────────────────────────────────────────
 
@@ -43,7 +45,7 @@ defmodule UniversalEnterprisePlatform.Infrastructure.Clients.TigerBeetleClient d
     id         — uint128 (use uuid_to_uint128/1 helper)
     ledger     — ISO 4217 numeric (1=USD, 356=INR, etc.)
     code       — account type code (your Chart of Accounts numbering)
-    flags      — TigerBeetle account flags (see TigerBeetlex.Account.Flags)
+    flags      — TigerBeetle account flags (see TigerBeetlex.AccountFlags)
   """
   @spec create_accounts([map()]) :: {:ok, [map()]} | {:error, term()}
   def create_accounts(accounts) do
@@ -109,7 +111,7 @@ defmodule UniversalEnterprisePlatform.Infrastructure.Clients.TigerBeetleClient d
 
   @impl GenServer
   def init(_opts) do
-    address = Application.get_env(:platform, :tigerbeetle_address, "3000")
+    address = Application.get_env(:platform, :tigerbeetle_address, "3001")
     Logger.info("[TigerBeetle] Connecting to #{address}")
 
     case TigerBeetlex.connect(@cluster_id, [address]) do
@@ -155,11 +157,11 @@ defmodule UniversalEnterprisePlatform.Infrastructure.Clients.TigerBeetleClient d
   # ── Private mappers ───────────────────────────────────────────
 
   defp to_tigerbeetle_account(params) do
-    %TigerBeetlex.Account{
+    %Account{
       id: params.id,
       ledger: params.ledger,
       code: params.code,
-      flags: Map.get(params, :flags, %TigerBeetlex.Account.Flags{}),
+      flags: Map.get(params, :flags, %Flags{}),
       user_data_128: Map.get(params, :user_data_128, 0),
       user_data_64: Map.get(params, :user_data_64, 0),
       user_data_32: Map.get(params, :user_data_32, 0)
@@ -167,14 +169,14 @@ defmodule UniversalEnterprisePlatform.Infrastructure.Clients.TigerBeetleClient d
   end
 
   defp to_tigerbeetle_transfer(params) do
-    %TigerBeetlex.Transfer{
+    %Transfer{
       id: params.id,
       debit_account_id: params.debit_account_id,
       credit_account_id: params.credit_account_id,
       ledger: params.ledger,
       amount: params.amount,
       code: params.code,
-      flags: Map.get(params, :flags, %TigerBeetlex.Transfer.Flags{}),
+      flags: Map.get(params, :flags, %Flags{}),
       user_data_128: Map.get(params, :user_data_128, 0),
       user_data_64: Map.get(params, :user_data_64, 0),
       user_data_32: Map.get(params, :user_data_32, 0)
