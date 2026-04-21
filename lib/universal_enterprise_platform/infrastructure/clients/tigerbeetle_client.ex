@@ -161,7 +161,7 @@ defmodule UniversalEnterprisePlatform.Infrastructure.Clients.TigerBeetleClient d
       id: params.id,
       ledger: params.ledger,
       code: params.code,
-      flags: Map.get(params, :flags, %Flags{}),
+      flags: Map.get(params, :flags, %AccountFlags{}),
       user_data_128: Map.get(params, :user_data_128, 0),
       user_data_64: Map.get(params, :user_data_64, 0),
       user_data_32: Map.get(params, :user_data_32, 0)
@@ -176,7 +176,7 @@ defmodule UniversalEnterprisePlatform.Infrastructure.Clients.TigerBeetleClient d
       ledger: params.ledger,
       amount: params.amount,
       code: params.code,
-      flags: Map.get(params, :flags, %Flags{}),
+      flags: Map.get(params, :flags, %TransferFlags{}),
       user_data_128: Map.get(params, :user_data_128, 0),
       user_data_64: Map.get(params, :user_data_64, 0),
       user_data_32: Map.get(params, :user_data_32, 0)
