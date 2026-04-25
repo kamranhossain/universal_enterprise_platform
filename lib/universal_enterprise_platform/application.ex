@@ -10,6 +10,7 @@ defmodule UniversalEnterprisePlatform.Application do
     children = [
       UniversalEnterprisePlatformWeb.Telemetry,
       UniversalEnterprisePlatform.Infrastructure.Repos.Repo,
+      {Redix, name: :valkey, host: "127.0.0.1", port: 6379},
       {DNSCluster,
        query: Application.get_env(:universal_enterprise_platform, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: UniversalEnterprisePlatform.PubSub},
