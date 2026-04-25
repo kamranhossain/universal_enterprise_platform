@@ -7,21 +7,30 @@ defmodule UniversalEnterprisePlatform.Application do
 
   @impl true
   def start(_type, _args) do
-    children = [
-      UniversalEnterprisePlatformWeb.Telemetry,
-      UniversalEnterprisePlatform.Infrastructure.Repos.Repo,
-      {Redix, name: :valkey, host: "127.0.0.1", port: 6379},
-      {DNSCluster,
-       query: Application.get_env(:universal_enterprise_platform, :dns_cluster_query) || :ignore},
-      {Phoenix.PubSub, name: UniversalEnterprisePlatform.PubSub},
-      # Start a worker by calling: UniversalEnterprisePlatform.Worker.start_link(arg)
-      # {UniversalEnterprisePlatform.Worker, arg},
-      # Start to serve requests, typically the last entry
-      UniversalEnterprisePlatformWeb.Endpoint
-    ]
+    pool_size = Application.get_env(:core, :valkey_pool_size, 5)
 
-    # See https://hexdocs.pm/elixir/Supervisor.html
-    # for other strategies and supported options
+    valkey_children =
+      for i <- 1..pool_size do
+        {Redix, name: :"valkey_#{i}", host: "127.0.0.1", port: 6379}
+      end
+
+    children =
+      [
+        UniversalEnterprisePlatformWeb.Telemetry,
+        UniversalEnterprisePlatform.Infrastructure.Repos.Repo
+      ] ++
+        valkey_children ++
+        [
+          {DNSCluster,
+           query:
+             Application.get_env(
+               :universal_enterprise_platform,
+               :dns_cluster_query
+             ) || :ignore},
+          {Phoenix.PubSub, name: UniversalEnterprisePlatform.PubSub},
+          UniversalEnterprisePlatformWeb.Endpoint
+        ]
+
     opts = [strategy: :one_for_one, name: UniversalEnterprisePlatform.Supervisor]
     Supervisor.start_link(children, opts)
   end
