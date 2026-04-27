@@ -111,7 +111,9 @@ defmodule UniversalEnterprisePlatform.Infrastructure.Clients.TigerBeetleClient d
 
   @impl GenServer
   def init(_opts) do
-    address = Application.get_env(:universal_enterprise_platform, :tigerbeetle_address, "3001")
+    address =
+      Application.get_env(:universal_enterprise_platform, :tigerbeetle_address, "127.0.0.1:3001")
+
     Logger.info("[TigerBeetle] Connecting to #{address}")
 
     case TigerBeetlex.connect(@cluster_id, [address]) do
