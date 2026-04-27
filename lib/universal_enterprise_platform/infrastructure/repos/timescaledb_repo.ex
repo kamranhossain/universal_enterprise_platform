@@ -1,6 +1,6 @@
 defmodule UniversalEnterprisePlatform.Infrastructure.Repos.TimescaleRepo do
   use Ecto.Repo,
-    otp_app: :core,
+    otp_app: :universal_enterprise_platform,
     adapter: Ecto.Adapters.Postgres
 
   @doc """
