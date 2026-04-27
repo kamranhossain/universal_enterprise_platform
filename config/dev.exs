@@ -11,6 +11,8 @@ config :universal_enterprise_platform, UniversalEnterprisePlatform.Infrastructur
   pool_size: 10,
   log_level: :debug
 
+config :universal_enterprise_platform, :tigerbeetle_enabled, true
+
 config :universal_enterprise_platform, :tigerbeetle,
   cluster_id: 0,
   addresses: ["127.0.0.1:3001"]

@@ -11,6 +11,8 @@ config :universal_enterprise_platform,
   ecto_repos: [UniversalEnterprisePlatform.Infrastructure.Repos.Repo],
   generators: [timestamp_type: :utc_datetime]
 
+config :universal_enterprise_platform, :tigerbeetle_enabled, true
+
 config :universal_enterprise_platform, :tigerbeetle,
   cluster_id: 0,
   addresses: ["127.0.0.1:3001"]

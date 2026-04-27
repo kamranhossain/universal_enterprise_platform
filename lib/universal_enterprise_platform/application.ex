@@ -23,45 +23,24 @@ defmodule UniversalEnterprisePlatform.Application do
 
   defp base_children do
     [
-      # ── L1 Infrastructure ──────────────────────────────────────
-
-      # Cache (ETS must start first — synchronous, never fails)
+      # ── L1 Infrastructure ──────────────────────────────────────────────────
       UniversalEnterprisePlatform.Infrastructure.Cache.EtsAdapter,
-
-      # Databases
       UniversalEnterprisePlatform.Infrastructure.Repos.Repo,
       UniversalEnterprisePlatform.Infrastructure.Repos.TimescaleRepo,
-
-      # Valkey connection pool
       valkey_pool_spec(),
-
-      # PubSub — before Oban and anything that broadcasts
       {Phoenix.PubSub, name: Platform.PubSub},
-
-      # HTTP client pool (Swoosh email, Meilisearch, Flink health)
       {Finch, name: UniversalEnterprisePlatform.Finch},
-
-      # ── L2 Kernel ──────────────────────────────────────────────
-
-      # Background jobs — after repos, before web
-      # {Oban, PlatformKernel.ObanConfig.config()},
-
-      # Telemetry — start early so metrics capture boot events
-      # UniversalEnterprisePlatform.Infrastructure.Telemetry,
-
-      # ── L6 Web ─────────────────────────────────────────────────
+      # ── L6 Web ─────────────────────────────────────────────────────────────
       UniversalEnterprisePlatformWeb.Endpoint
     ]
   end
 
-  defp maybe_add(children, child, true) do
-    Logger.info("[UniversalEnterprisePlatform] + #{inspect(child)}")
-    children ++ [child]
-  end
-
-  defp maybe_add(children, child, false) do
-    Logger.info("[UniversalEnterprisePlatform] - #{inspect(child)} (disabled)")
-    children
+  # Logs once per child, not twice (enabled + disabled)
+  defp maybe_add(children, child, enabled?) do
+    tag = if enabled?, do: "+", else: "-"
+    suffix = if enabled?, do: "", else: " (disabled)"
+    Logger.info("[UniversalEnterprisePlatform] #{tag} #{inspect(child)}#{suffix}")
+    if enabled?, do: children ++ [child], else: children
   end
 
   defp valkey_pool_spec do
@@ -72,10 +51,7 @@ defmodule UniversalEnterprisePlatform.Application do
 
     children =
       for i <- 1..pool_size do
-        Supervisor.child_spec(
-          {Redix, {url, [name: :"valkey_#{i}"]}},
-          id: :"valkey_#{i}"
-        )
+        Supervisor.child_spec({Redix, {url, [name: :"valkey_#{i}"]}}, id: :"valkey_#{i}")
       end
 
     %{
