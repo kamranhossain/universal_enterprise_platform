@@ -120,9 +120,9 @@ defmodule UniversalEnterprisePlatform.Infrastructure.Clients.TigerBeetleClient d
 
     Logger.info("[TigerBeetle] Connecting to #{address}")
 
-    case TigerBeetlex.Client.new(
-           cluster_id: @cluster_id,
-           addresses: [address]
+    case TigerBeetlex.connect(
+           @cluster_id,
+           [String.to_charlist(address)]
          ) do
       {:ok, client} ->
         Logger.info("[TigerBeetle] Connected")
