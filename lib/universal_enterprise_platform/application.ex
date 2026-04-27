@@ -9,15 +9,15 @@ defmodule UniversalEnterprisePlatform.Application do
     children =
       base_children()
       |> maybe_add(
-        UniversalEnterprisePlatform.Clients.TigerBeetleClient,
+        UniversalEnterprisePlatform.Infrastructure.Clients.TigerBeetleClient,
         Application.get_env(:universal_enterprise_platform, :tigerbeetle_enabled, true)
       )
       |> maybe_add(
-        UniversalEnterprisePlatform.Clients.StarRocksRepo,
+        UniversalEnterprisePlatform.Infrastructure.Clients.StarRocksRepo,
         Application.get_env(:universal_enterprise_platform, :starrocks_enabled, false)
       )
 
-    opts = [strategy: :one_for_one, name: Platform.Supervisor]
+    opts = [strategy: :one_for_one, name: UniversalEnterprisePlatform.Supervisor]
     Supervisor.start_link(children, opts)
   end
 
@@ -55,12 +55,12 @@ defmodule UniversalEnterprisePlatform.Application do
   end
 
   defp maybe_add(children, child, true) do
-    Logger.info("[Platform] + #{inspect(child)}")
+    Logger.info("[UniversalEnterprisePlatform] + #{inspect(child)}")
     children ++ [child]
   end
 
   defp maybe_add(children, child, false) do
-    Logger.info("[Platform] - #{inspect(child)} (disabled)")
+    Logger.info("[UniversalEnterprisePlatform] - #{inspect(child)} (disabled)")
     children
   end
 
@@ -81,7 +81,8 @@ defmodule UniversalEnterprisePlatform.Application do
     %{
       id: :valkey_pool,
       start:
-        {Supervisor, :start_link, [children, [strategy: :one_for_one, name: Platform.ValkeyPool]]},
+        {Supervisor, :start_link,
+         [children, [strategy: :one_for_one, name: UniversalEnterprisePlatform.ValkeyPool]]},
       type: :supervisor
     }
   end
