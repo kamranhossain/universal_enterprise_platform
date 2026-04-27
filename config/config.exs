@@ -8,7 +8,10 @@
 import Config
 
 config :universal_enterprise_platform,
-  ecto_repos: [UniversalEnterprisePlatform.Infrastructure.Repos.Repo],
+  ecto_repos: [
+    UniversalEnterprisePlatform.Infrastructure.Repos.Repo,
+    UniversalEnterprisePlatform.Infrastructure.Repos.TimescaleRepo
+  ],
   generators: [timestamp_type: :utc_datetime]
 
 config :universal_enterprise_platform, :tigerbeetle_enabled, true

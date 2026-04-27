@@ -11,6 +11,15 @@ config :universal_enterprise_platform, UniversalEnterprisePlatform.Infrastructur
   pool_size: 10,
   log_level: :debug
 
+config :universal_enterprise_platform,
+       UniversalEnterprisePlatform.Infrastructure.Repos.TimescaleRepo,
+       username: "postgres",
+       password: "postgres",
+       hostname: "localhost",
+       database: "universal_enterprise_platform_ts_dev",
+       pool: Ecto.Adapters.SQL.Sandbox,
+       pool_size: 5
+
 config :universal_enterprise_platform, :tigerbeetle_enabled, true
 
 config :universal_enterprise_platform, :tigerbeetle,
