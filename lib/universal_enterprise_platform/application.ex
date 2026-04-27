@@ -44,7 +44,7 @@ defmodule UniversalEnterprisePlatform.Application do
       # ── L2 Kernel ──────────────────────────────────────────────
 
       # Background jobs — after repos, before web
-      {Oban, PlatformKernel.ObanConfig.config()},
+      # {Oban, PlatformKernel.ObanConfig.config()},
 
       # Telemetry — start early so metrics capture boot events
       Platform.Infrastructure.Telemetry,
