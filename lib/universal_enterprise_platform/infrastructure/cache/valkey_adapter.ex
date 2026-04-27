@@ -8,7 +8,7 @@ defmodule UniversalEnterprisePlatform.Infrastructure.Cache.ValkeyAdapter do
   @behaviour UniversalEnterprisePlatform.Infrastructure.Cache.Behaviour
 
   defp conn do
-    pool_size = Application.get_env(:core, :valkey_pool_size, 5)
+    pool_size = Application.get_env(:universal_enterprise_platform, :valkey_pool_size, 5)
     :"valkey_#{:rand.uniform(pool_size)}"
   end
 

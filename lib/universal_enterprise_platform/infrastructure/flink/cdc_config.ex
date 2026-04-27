@@ -6,7 +6,7 @@ defmodule UniversalEnterprisePlatform.Infrastructure.Flink.CdcConfig do
   Flink runs as a separate Docker process (--profile cdc).
 
   To test connection:  make test-flink
-  To enable:          config :core, :flink_enabled, true
+  To enable:          config :universal_enterprise_platform, :flink_enabled, true
 
   CDC job SQL files live in flink/jobs/ — they are ready to submit
   once PostgreSQL WAL replication slots and StarRocks are configured.
@@ -14,9 +14,15 @@ defmodule UniversalEnterprisePlatform.Infrastructure.Flink.CdcConfig do
 
   require Logger
 
-  def enabled?, do: Application.get_env(:core, :flink_enabled, false)
+  def enabled?, do: Application.get_env(:universal_enterprise_platform, :flink_enabled, false)
 
-  defp rest_url, do: Application.get_env(:core, :flink_rest_url, "http://localhost:8081")
+  defp rest_url,
+    do:
+      Application.get_env(
+        :universal_enterprise_platform,
+        :flink_rest_url,
+        "http://localhost:8081"
+      )
 
   @doc """
   Check if Flink JobManager REST API is reachable.
