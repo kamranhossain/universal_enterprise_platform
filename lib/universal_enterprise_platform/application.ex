@@ -50,7 +50,7 @@ defmodule UniversalEnterprisePlatform.Application do
       # UniversalEnterprisePlatform.Infrastructure.Telemetry,
 
       # ── L6 Web ─────────────────────────────────────────────────
-      PlatformWeb.Endpoint
+      UniversalEnterprisePlatformWeb.Endpoint
     ]
   end
 
