@@ -26,11 +26,11 @@ defmodule UniversalEnterprisePlatform.Application do
       # ── L1 Infrastructure ──────────────────────────────────────
 
       # Cache (ETS must start first — synchronous, never fails)
-      Platform.Infrastructure.Cache.EtsAdapter,
+      UniversalEnterprisePlatform.Infrastructure.Cache.EtsAdapter,
 
       # Databases
-      Platform.Repo,
-      Platform.TimescaleRepo,
+      UniversalEnterprisePlatform.Infrastructure.Repos.Repo,
+      UniversalEnterprisePlatform.Infrastructure.Repos.TimescaleRepo,
 
       # Valkey connection pool
       valkey_pool_spec(),
@@ -39,7 +39,7 @@ defmodule UniversalEnterprisePlatform.Application do
       {Phoenix.PubSub, name: Platform.PubSub},
 
       # HTTP client pool (Swoosh email, Meilisearch, Flink health)
-      {Finch, name: Platform.Finch},
+      {Finch, name: UniversalEnterprisePlatform.Finch},
 
       # ── L2 Kernel ──────────────────────────────────────────────
 
@@ -47,7 +47,7 @@ defmodule UniversalEnterprisePlatform.Application do
       # {Oban, PlatformKernel.ObanConfig.config()},
 
       # Telemetry — start early so metrics capture boot events
-      Platform.Infrastructure.Telemetry,
+      # UniversalEnterprisePlatform.Infrastructure.Telemetry,
 
       # ── L6 Web ─────────────────────────────────────────────────
       PlatformWeb.Endpoint
