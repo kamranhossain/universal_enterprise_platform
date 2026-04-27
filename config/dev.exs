@@ -2,8 +2,8 @@ import Config
 
 # Configure your database
 config :universal_enterprise_platform, UniversalEnterprisePlatform.Infrastructure.Repos.Repo,
-  username: System.get_env("DB_USER") || "postgresql",
-  password: System.get_env("DB_PASSWORD") || "postgresql",
+  username: System.get_env("DB_USER") || "postgres",
+  password: System.get_env("DB_PASSWORD") || "postgres",
   hostname: "localhost",
   database: "universal_enterprise_platform_dev",
   stacktrace: true,
@@ -13,11 +13,10 @@ config :universal_enterprise_platform, UniversalEnterprisePlatform.Infrastructur
 
 config :universal_enterprise_platform,
        UniversalEnterprisePlatform.Infrastructure.Repos.TimescaleRepo,
-       username: "postgres",
-       password: "postgres",
+       username: System.get_env("DB_USER") || "postgres",
+       password: System.get_env("DB_PASSWORD") || "postgres",
        hostname: "localhost",
        database: "universal_enterprise_platform_ts_dev",
-       pool: Ecto.Adapters.SQL.Sandbox,
        pool_size: 5
 
 config :universal_enterprise_platform, :tigerbeetle_enabled, true
