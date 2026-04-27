@@ -1,7 +1,7 @@
 defmodule UniversalEnterprisePlatform.Infrastructure.Health.Checker do
   @moduledoc "Aggregates health of all infrastructure. Drives /health endpoint."
 
-  alias UniversalEnterprisePlatform.Infrastructure.{Repo, TimescaleRepo, StarRocksRepo}
+  alias UniversalEnterprisePlatform.Infrastructure.Repos.{Repo, TimescaleRepo, StarRocksRepo}
   alias UniversalEnterprisePlatform.Infrastructure.Cache.{EtsAdapter, ValkeyAdapter}
   alias UniversalEnterprisePlatform.Infrastructure.Clients.{TigerBeetleClient, SpiceDBClient}
   alias UniversalEnterprisePlatform.Infrastructure.Flink.CdcConfig
