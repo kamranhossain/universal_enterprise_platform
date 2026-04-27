@@ -90,7 +90,7 @@ defmodule UniversalEnterprisePlatform.Infrastructure.Health.Checker do
   end
 
   defp check_tigerbeetle do
-    if Application.get_env(:platform, :tigerbeetle_enabled, true) do
+    if Application.get_env(:universal_enterprise_platform, :tigerbeetle_enabled, true) do
       case TigerBeetleClient.health_check() do
         {:ok, info} -> %{status: :ok, active: true, message: inspect(info)}
         {:error, e} -> %{status: :error, active: true, message: inspect(e)}

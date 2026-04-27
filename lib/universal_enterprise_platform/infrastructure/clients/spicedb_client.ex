@@ -40,8 +40,10 @@ defmodule UniversalEnterprisePlatform.Infrastructure.Clients.SpiceDBClient do
   # ── Connection ────────────────────────────────────────────────
 
   def client do
-    endpoint = Application.get_env(:platform, :spicedb_endpoint, "localhost:50051")
-    token = Application.get_env(:platform, :spicedb_token, "local_dev_key")
+    endpoint =
+      Application.get_env(:universal_enterprise_platform, :spicedb_endpoint, "localhost:50051")
+
+    token = Application.get_env(:universal_enterprise_platform, :spicedb_token, "local_dev_key")
 
     Client.new(endpoint, GRPCUtil.insecure_bearer_auth_token(token))
   end
@@ -58,7 +60,7 @@ defmodule UniversalEnterprisePlatform.Infrastructure.Clients.SpiceDBClient do
         {:ok,
          %{
            schema_length: String.length(resp.schema_text),
-           endpoint: Application.get_env(:platform, :spicedb_endpoint)
+           endpoint: Application.get_env(:universal_enterprise_platform, :spicedb_endpoint)
          }}
 
       {:error, %GRPC.RPCError{} = err} ->

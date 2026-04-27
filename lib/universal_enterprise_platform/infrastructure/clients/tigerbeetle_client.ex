@@ -26,7 +26,7 @@ defmodule UniversalEnterprisePlatform.Infrastructure.Clients.TigerBeetleClient d
   use GenServer
   require Logger
 
-  @port Application.compile_env(:platform, :tigerbeetle_port, 3001)
+  @port Application.compile_env(:universal_enterprise_platform, :tigerbeetle_port, 3001)
   @cluster_id 0
 
   alias TigerBeetlex.{Account, AccountFlags, Transfer, TransferFlags}
@@ -111,7 +111,7 @@ defmodule UniversalEnterprisePlatform.Infrastructure.Clients.TigerBeetleClient d
 
   @impl GenServer
   def init(_opts) do
-    address = Application.get_env(:platform, :tigerbeetle_address, "3001")
+    address = Application.get_env(:universal_enterprise_platform, :tigerbeetle_address, "3001")
     Logger.info("[TigerBeetle] Connecting to #{address}")
 
     case TigerBeetlex.connect(@cluster_id, [address]) do
