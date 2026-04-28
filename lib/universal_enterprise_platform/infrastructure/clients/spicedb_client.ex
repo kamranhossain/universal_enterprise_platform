@@ -53,7 +53,7 @@ defmodule UniversalEnterprisePlatform.Infrastructure.Clients.SpiceDBClient do
     # Check if we can connect by writing a no-op schema validation
     case Authzed.Api.V1.SchemaService.Stub.read_schema(
            c.channel,
-           Authzed.Api.V1.ReadSchemaRequest.new(),
+           %Authzed.Api.V1.ReadSchemaRequest{},
            metadata: c.metadata
          ) do
       {:ok, resp} ->
