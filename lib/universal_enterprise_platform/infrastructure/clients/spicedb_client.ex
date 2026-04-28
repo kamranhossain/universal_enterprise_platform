@@ -53,8 +53,7 @@ defmodule UniversalEnterprisePlatform.Infrastructure.Clients.SpiceDBClient do
     # Check if we can connect by writing a no-op schema validation
     case Authzed.Api.V1.SchemaService.Stub.read_schema(
            c.channel,
-           %Authzed.Api.V1.ReadSchemaRequest{},
-           metadata: c.metadata
+           %Authzed.Api.V1.ReadSchemaRequest{}
          ) do
       {:ok, resp} ->
         {:ok,
@@ -105,8 +104,7 @@ defmodule UniversalEnterprisePlatform.Infrastructure.Clients.SpiceDBClient do
 
     case Authzed.Api.V1.PermissionsService.Stub.check_permission(
            c.channel,
-           request,
-           metadata: c.metadata
+           request
          ) do
       {:ok, %{permissionship: :PERMISSIONSHIP_HAS_PERMISSION}} -> :allowed
       {:ok, _} -> :denied
@@ -157,8 +155,7 @@ defmodule UniversalEnterprisePlatform.Infrastructure.Clients.SpiceDBClient do
 
     case Authzed.Api.V1.PermissionsService.Stub.write_relationships(
            c.channel,
-           request,
-           metadata: c.metadata
+           request
          ) do
       {:ok, resp} -> {:ok, %{zed_token: resp.written_at}}
       {:error, r} -> {:error, r}
@@ -191,8 +188,7 @@ defmodule UniversalEnterprisePlatform.Infrastructure.Clients.SpiceDBClient do
 
     case Authzed.Api.V1.PermissionsService.Stub.write_relationships(
            c.channel,
-           WriteRelationshipsRequest.new(updates: [update]),
-           metadata: c.metadata
+           WriteRelationshipsRequest.new(updates: [update])
          ) do
       {:ok, _} -> :ok
       {:error, r} -> {:error, r}
