@@ -19,6 +19,9 @@ config :universal_enterprise_platform,
        database: "universal_enterprise_platform_ts_dev",
        pool_size: 5
 
+config :universal_enterprise_platform,
+  starrocks_enabled: false
+
 config :universal_enterprise_platform, :tigerbeetle_enabled, true
 
 config :universal_enterprise_platform, :tigerbeetle,
