@@ -28,6 +28,10 @@ config :universal_enterprise_platform, :tigerbeetle,
   cluster_id: 0,
   addresses: ["127.0.0.1:3001"]
 
+config :spicedb,
+  endpoint: "127.0.0.1:50051",
+  preshared_key: "secret123"
+
 # For development, we disable any cache and enable
 # debugging and code reloading.
 #
