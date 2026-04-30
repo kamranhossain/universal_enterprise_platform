@@ -21,16 +21,12 @@ defmodule UniversalEnterprisePlatform.Infrastructure.Clients.SpiceDBClient do
   """
 
   alias Authzed.Api.V1.{
-    Client,
-    GRPCUtil,
     CheckPermissionRequest,
     WriteRelationshipsRequest,
-    DeleteRelationshipsRequest,
     ObjectReference,
     SubjectReference,
     Relationship,
-    RelationshipUpdate,
-    RelationshipFilter
+    RelationshipUpdate
   }
 
   @consistency_full_consistency %Authzed.Api.V1.Consistency{
@@ -91,16 +87,16 @@ defmodule UniversalEnterprisePlatform.Infrastructure.Clients.SpiceDBClient do
           resource_type :: String.t(),
           resource_id :: String.t()
         ) :: :allowed | :denied | {:error, term()}
+
   def check_permission(subject_type, subject_id, permission, resource_type, resource_id) do
     c = client()
 
-    request =
-      CheckPermissionRequest.new(
-        consistency: @consistency_full_consistency,
-        resource: object_ref(resource_type, resource_id),
-        permission: permission,
-        subject: subject_ref(subject_type, subject_id)
-      )
+    request = %CheckPermissionRequest{
+      consistency: @consistency_full_consistency,
+      resource: object_ref(resource_type, resource_id),
+      permission: permission,
+      subject: subject_ref(subject_type, subject_id)
+    }
 
     case Authzed.Api.V1.PermissionsService.Stub.check_permission(
            c.channel,
@@ -113,6 +109,29 @@ defmodule UniversalEnterprisePlatform.Infrastructure.Clients.SpiceDBClient do
   rescue
     e -> {:error, Exception.message(e)}
   end
+
+  # def check_permission(subject_type, subject_id, permission, resource_type, resource_id) do
+  #   c = client()
+
+  #   request =
+  #     CheckPermissionRequest.new(
+  #       consistency: @consistency_full_consistency,
+  #       resource: object_ref(resource_type, resource_id),
+  #       permission: permission,
+  #       subject: subject_ref(subject_type, subject_id)
+  #     )
+
+  #   case Authzed.Api.V1.PermissionsService.Stub.check_permission(
+  #          c.channel,
+  #          request
+  #        ) do
+  #     {:ok, %{permissionship: :PERMISSIONSHIP_HAS_PERMISSION}} -> :allowed
+  #     {:ok, _} -> :denied
+  #     {:error, reason} -> {:error, reason}
+  #   end
+  # rescue
+  #   e -> {:error, Exception.message(e)}
+  # end
 
   @doc "Shorthand — returns boolean. Use when you don't need :error distinction."
   def can?(subject_type, subject_id, permission, resource_type, resource_id) do
@@ -140,18 +159,18 @@ defmodule UniversalEnterprisePlatform.Infrastructure.Clients.SpiceDBClient do
   def write_relationship(resource_type, resource_id, relation, subject_type, subject_id) do
     c = client()
 
-    update =
-      RelationshipUpdate.new(
-        operation: :OPERATION_TOUCH,
-        relationship:
-          Relationship.new(
-            resource: object_ref(resource_type, resource_id),
-            relation: relation,
-            subject: subject_ref(subject_type, subject_id)
-          )
-      )
+    update = %RelationshipUpdate{
+      operation: :OPERATION_TOUCH,
+      relationship: %Relationship{
+        resource: object_ref(resource_type, resource_id),
+        relation: relation,
+        subject: subject_ref(subject_type, subject_id)
+      }
+    }
 
-    request = WriteRelationshipsRequest.new(updates: [update])
+    request = %WriteRelationshipsRequest{
+      updates: [update]
+    }
 
     case Authzed.Api.V1.PermissionsService.Stub.write_relationships(
            c.channel,
@@ -175,20 +194,22 @@ defmodule UniversalEnterprisePlatform.Infrastructure.Clients.SpiceDBClient do
   def delete_relationship(resource_type, resource_id, relation, subject_type, subject_id) do
     c = client()
 
-    update =
-      RelationshipUpdate.new(
-        operation: :OPERATION_DELETE,
-        relationship:
-          Relationship.new(
-            resource: object_ref(resource_type, resource_id),
-            relation: relation,
-            subject: subject_ref(subject_type, subject_id)
-          )
-      )
+    update = %RelationshipUpdate{
+      operation: :OPERATION_DELETE,
+      relationship: %Relationship{
+        resource: object_ref(resource_type, resource_id),
+        relation: relation,
+        subject: subject_ref(subject_type, subject_id)
+      }
+    }
+
+    request = %WriteRelationshipsRequest{
+      updates: [update]
+    }
 
     case Authzed.Api.V1.PermissionsService.Stub.write_relationships(
            c.channel,
-           WriteRelationshipsRequest.new(updates: [update])
+           request
          ) do
       {:ok, _} -> :ok
       {:error, r} -> {:error, r}
@@ -200,7 +221,10 @@ defmodule UniversalEnterprisePlatform.Infrastructure.Clients.SpiceDBClient do
   # ── Private ───────────────────────────────────────────────────
 
   defp object_ref(type, id) do
-    ObjectReference.new(object_type: type, object_id: id)
+    %ObjectReference{
+      object_type: type,
+      object_id: id
+    }
   end
 
   defp subject_ref(type, id) do
