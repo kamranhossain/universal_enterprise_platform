@@ -28,7 +28,7 @@ config :universal_enterprise_platform, :tigerbeetle,
   cluster_id: 0,
   addresses: ["127.0.0.1:3001"]
 
-config :spicedb,
+config :universal_enterprise_platform, :spicedb,
   endpoint: "127.0.0.1:50051",
   preshared_key: "secret123"
 
