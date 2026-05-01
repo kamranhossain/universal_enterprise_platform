@@ -55,7 +55,8 @@ defmodule UniversalEnterprisePlatform.MixProject do
       # SpiceDB gRPC client
       {:authzed, "~> 1.6"},
       # gRPC transport for authzed
-      {:grpc, "~> 0.10.0"},
+      {:grpc, "~> 0.7"},
+      {:protobuf, "~> 0.12"},
 
       # ── Cache ───────────────────────────────────────
       {:redix, "~> 1.5"},

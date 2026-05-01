@@ -228,6 +228,11 @@ defmodule UniversalEnterprisePlatform.Infrastructure.Clients.SpiceDBClient do
   end
 
   defp subject_ref(type, id) do
-    SubjectReference.new(object: ObjectReference.new(object_type: type, object_id: id))
+    %SubjectReference{
+      object: %ObjectReference{
+        object_type: type,
+        object_id: id
+      }
+    }
   end
 end
