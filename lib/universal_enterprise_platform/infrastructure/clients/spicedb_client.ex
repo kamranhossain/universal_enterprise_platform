@@ -35,14 +35,30 @@ defmodule UniversalEnterprisePlatform.Infrastructure.Clients.SpiceDBClient do
 
   # ── Connection ────────────────────────────────────────────────
 
-  def client do
-    endpoint =
-      Application.get_env(:universal_enterprise_platform, :spicedb_endpoint, "localhost:50051")
-
-    token = Application.get_env(:universal_enterprise_platform, :spicedb_token, "local_dev_key")
-
-    Client.new(endpoint, GRPCUtil.insecure_bearer_auth_token(token))
+  defp endpoint do
+    Application.fetch_env!(:universal_enterprise_platform, :spicedb)[:endpoint]
   end
+
+  defp token do
+    Application.get_env(:universal_enterprise_platform, :spicedb)[:preshared_key]
+  end
+
+  defp metadata do
+    [{"authorization", "Bearer #{token()}"}]
+  end
+
+  def client do
+    GRPC.Stub.connect(endpoint())
+  end
+
+  # def client do
+  #   endpoint =
+  #     Application.get_env(:universal_enterprise_platform, :spicedb_endpoint, "localhost:50051")
+
+  #   token = Application.get_env(:universal_enterprise_platform, :spicedb_token, "local_dev_key")
+
+  #   Client.new(endpoint, GRPCUtil.insecure_bearer_auth_token(token))
+  # end
 
   def health_check do
     {:ok, channel} = client()
@@ -89,7 +105,6 @@ defmodule UniversalEnterprisePlatform.Infrastructure.Clients.SpiceDBClient do
         ) :: :allowed | :denied | {:error, term()}
 
   def check_permission(subject_type, subject_id, permission, resource_type, resource_id) do
-    c = client()
     {:ok, channel} = client()
 
     request = %CheckPermissionRequest{
@@ -159,7 +174,7 @@ defmodule UniversalEnterprisePlatform.Infrastructure.Clients.SpiceDBClient do
           subject_id :: String.t()
         ) :: {:ok, map()} | {:error, term()}
   def write_relationship(resource_type, resource_id, relation, subject_type, subject_id) do
-    c = client()
+    {:ok, channel} = client()
 
     update = %RelationshipUpdate{
       operation: :OPERATION_TOUCH,
@@ -195,7 +210,7 @@ defmodule UniversalEnterprisePlatform.Infrastructure.Clients.SpiceDBClient do
           subject_id :: String.t()
         ) :: :ok | {:error, term()}
   def delete_relationship(resource_type, resource_id, relation, subject_type, subject_id) do
-    c = client()
+    {:ok, channel} = client()
 
     update = %RelationshipUpdate{
       operation: :OPERATION_DELETE,
