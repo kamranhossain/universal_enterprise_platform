@@ -45,17 +45,17 @@ defmodule UniversalEnterprisePlatform.Infrastructure.Clients.SpiceDBClient do
   end
 
   def health_check do
-    c = client()
-    # Check if we can connect by writing a no-op schema validation
+    {:ok, channel} = client()
+
     case Authzed.Api.V1.SchemaService.Stub.read_schema(
-           c.channel,
-           %Authzed.Api.V1.ReadSchemaRequest{}
+           channel,
+           %Authzed.Api.V1.ReadSchemaRequest{},
+           metadata: metadata()
          ) do
       {:ok, resp} ->
         {:ok,
          %{
-           schema_length: String.length(resp.schema_text),
-           endpoint: Application.get_env(:universal_enterprise_platform, :spicedb_endpoint)
+           schema_length: String.length(resp.schema_text)
          }}
 
       {:error, %GRPC.RPCError{} = err} ->
@@ -90,6 +90,7 @@ defmodule UniversalEnterprisePlatform.Infrastructure.Clients.SpiceDBClient do
 
   def check_permission(subject_type, subject_id, permission, resource_type, resource_id) do
     c = client()
+    {:ok, channel} = client()
 
     request = %CheckPermissionRequest{
       consistency: @consistency_full_consistency,
@@ -99,8 +100,9 @@ defmodule UniversalEnterprisePlatform.Infrastructure.Clients.SpiceDBClient do
     }
 
     case Authzed.Api.V1.PermissionsService.Stub.check_permission(
-           c.channel,
-           request
+           channel,
+           request,
+           metadata: metadata()
          ) do
       {:ok, %{permissionship: :PERMISSIONSHIP_HAS_PERMISSION}} -> :allowed
       {:ok, _} -> :denied
@@ -173,8 +175,9 @@ defmodule UniversalEnterprisePlatform.Infrastructure.Clients.SpiceDBClient do
     }
 
     case Authzed.Api.V1.PermissionsService.Stub.write_relationships(
-           c.channel,
-           request
+           channel,
+           request,
+           metadata: metadata()
          ) do
       {:ok, resp} -> {:ok, %{zed_token: resp.written_at}}
       {:error, r} -> {:error, r}
@@ -208,8 +211,9 @@ defmodule UniversalEnterprisePlatform.Infrastructure.Clients.SpiceDBClient do
     }
 
     case Authzed.Api.V1.PermissionsService.Stub.write_relationships(
-           c.channel,
-           request
+           channel,
+           request,
+           metadata: metadata()
          ) do
       {:ok, _} -> :ok
       {:error, r} -> {:error, r}
