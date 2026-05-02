@@ -27,6 +27,8 @@ defmodule UniversalEnterprisePlatform.Application do
       UniversalEnterprisePlatform.Infrastructure.Cache.EtsAdapter,
       UniversalEnterprisePlatform.Infrastructure.Repos.Repo,
       UniversalEnterprisePlatform.Infrastructure.Repos.TimescaleRepo,
+      UniversalEnterprisePlatform.Infrastructure.Messaging.MqttClient,
+      UniversalEnterprisePlatform.Infrastructure.Messaging.KafkaClient,
       valkey_pool_spec(),
       {Phoenix.PubSub, name: Platform.PubSub},
       {Finch, name: UniversalEnterprisePlatform.Finch},
