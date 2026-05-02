@@ -63,7 +63,7 @@ defmodule UniversalEnterprisePlatform.MixProject do
 
       # ── Messaging / Streaming ────────────────────────────────────────────────
       # MQTT
-      {:emqtt, github: "emqx/emqtt", tag: "v1.15.0", system_env: "ELIXIR_MAKE_ENV"},
+      {:emqtt, "~> 1.15.0"},
       {:broadway, "~> 1.2"},
       # BroadwayKafka producer
       {:broadway_kafka, "~> 0.4.4"},
