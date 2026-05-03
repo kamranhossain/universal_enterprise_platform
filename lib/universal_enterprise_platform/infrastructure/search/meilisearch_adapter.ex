@@ -9,6 +9,7 @@ defmodule Platform.Infrastructure.Search.MeilisearchAdapter do
   - Retry + timeout
   - Tenant-aware indexing
   - Health + readiness checks
+  - Just now in check
 
   Index strategy:
     "#{tenant_short}_#{resource}"
