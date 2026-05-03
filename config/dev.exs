@@ -91,6 +91,10 @@ config :universal_enterprise_platform, UniversalEnterprisePlatformWeb.Endpoint,
     ]
   ]
 
+config :universal_enterprise_platform, :meilisearch,
+  url: "http://127.0.0.1:7700",
+  api_key: "masterKey"
+
 # Enable dev routes for dashboard and mailbox
 config :universal_enterprise_platform, dev_routes: true
 
