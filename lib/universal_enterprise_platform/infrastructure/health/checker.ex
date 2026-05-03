@@ -1,5 +1,17 @@
 defmodule UniversalEnterprisePlatform.Infrastructure.Health.Checker do
-  @moduledoc "Aggregates health of all infrastructure. Drives /health endpoint."
+  @moduledoc """
+  Comprehensive health checker for all infrastructure components.
+
+  Components checked:
+    Databases:     postgresql, timescaledb, postgis, pgvector, pg_textsearch
+    Cache:         valkey, ets
+    Messaging:     mqtt, kafka
+    Search:        meilisearch
+    Ledger:        tigerbeetle
+    Authorization: spicedb
+    Analytics:     starrocks (optional), flink_cdc (optional)
+    etc
+  """
 
   alias UniversalEnterprisePlatform.Infrastructure.Repos.{Repo, TimescaleRepo, StarRocksRepo}
   alias UniversalEnterprisePlatform.Infrastructure.Cache.{EtsAdapter, ValkeyAdapter}
