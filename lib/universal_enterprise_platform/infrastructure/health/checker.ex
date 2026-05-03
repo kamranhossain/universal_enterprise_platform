@@ -1,169 +1,110 @@
 defmodule UniversalEnterprisePlatform.Infrastructure.Health.Checker do
-  @moduledoc """
-  Comprehensive health checker for all infrastructure components.
-
-  Components checked:
-    Databases:     postgresql, timescaledb, postgis, pgvector, pg_textsearch
-    Cache:         valkey, ets
-    Messaging:     mqtt, kafka
-    Search:        meilisearch
-    Ledger:        tigerbeetle
-    Authorization: spicedb
-    Analytics:     starrocks (optional), flink_cdc (optional)
-  """
+  @moduledoc "Aggregates health of all infrastructure. Drives /health endpoint."
 
   alias UniversalEnterprisePlatform.Infrastructure.Repos.{Repo, TimescaleRepo, StarRocksRepo}
   alias UniversalEnterprisePlatform.Infrastructure.Cache.{EtsAdapter, ValkeyAdapter}
   alias UniversalEnterprisePlatform.Infrastructure.Clients.{TigerBeetleClient, SpiceDBClient}
   alias UniversalEnterprisePlatform.Infrastructure.Flink.CdcConfig
+  alias UniversalEnterprisePlatform.Infrastructure.Messaging.{KafkaClient, MqttClient}
+  alias UniversalEnterprisePlatform.Infrastructure.Search.MeilisearchAdapter
 
-  @timeout 5_000
-
-  @doc "Run all health checks. Returns {:ok, results} always — never raises."
   def check_all do
-    checks = [
-      # ── PostgreSQL extensions (all via main Repo) ───────────────
-      {:postgresql, &check_postgresql/0},
-      {:timescaledb, &check_timescaledb/0},
-      {:postgis, &check_postgis/0},
-      {:pgvector, &check_pgvector/0},
-      {:pg_textsearch, &check_pg_textsearch/0},
+    components = %{
+      postgresql: check_postgresql(),
+      timescaledb: check_timescaledb(),
+      postgis: check_postgis(),
+      pg_textsearch: check_pg_textsearch(),
+      pgvector: check_pgvector(),
+      meilisearch: check_meilisearch(),
+      kafka: check_kafka(),
+      valkey: check_valkey(),
+      ets: check_ets(),
+      tigerbeetle: check_tigerbeetle(),
+      spicedb: check_spicedb(),
+      starrocks: check_starrocks(),
+      flink_cdc: check_flink()
+    }
 
-      # ── Cache ────────────────────────────────────────────────────
-      {:valkey, &check_valkey/0},
-      {:ets, &check_ets/0},
-
-      # ── Messaging ────────────────────────────────────────────────
-      {:mqtt, &check_mqtt/0},
-      {:kafka, &check_kafka/0},
-
-      # ── Search ───────────────────────────────────────────────────
-      {:meilisearch, &check_meilisearch/0},
-
-      # ── External services ─────────────────────────────────────────
-      {:tigerbeetle, &check_tigerbeetle/0},
-      {:spicedb, &check_spicedb/0},
-
-      # ── Analytics (optional) ──────────────────────────────────────
-      {:starrocks, &check_starrocks/0},
-      {:flink_cdc, &check_flink_cdc/0}
+    # Critical = system cannot function without these
+    critical = [
+      :postgresql,
+      :timescaledb,
+      :valkey,
+      :ets,
+      :tigerbeetle,
+      :spicedb,
+      :meilisearch,
+      :kafka
     ]
 
-    results =
-      checks
-      |> Task.async_stream(
-        fn {name, check_fn} ->
-          result =
-            try do
-              check_fn.()
-            rescue
-              e -> error_result("Exception: #{Exception.message(e)}")
-            catch
-              :exit, reason -> error_result("Exit: #{inspect(reason)}")
-            end
+    overall =
+      if Enum.all?(critical, &(components[&1].status in [:ok, :disabled])),
+        do: :ok,
+        else: :degraded
 
-          {name, result}
-        end,
-        timeout: @timeout,
-        on_timeout: :kill_task
-      )
-      |> Enum.map(fn
-        {:ok, {name, result}} -> {name, result}
-        {:exit, :timeout} -> {:unknown, error_result("Timeout")}
-      end)
-      |> Map.new()
-
-    overall = overall_status(results)
-    {:ok, %{status: overall, timestamp: DateTime.utc_now(), components: results}}
+    %{
+      timestamp: DateTime.utc_now(),
+      status: overall,
+      components: components
+    }
   end
-
-  # ── PostgreSQL ─────────────────────────────────────────────────
 
   defp check_postgresql do
-    %{rows: [[version]]} = Repo.query!("SELECT version()")
-    # Extract just the version number for a clean message
-    short = version |> String.split(" on ") |> List.first()
-    ok(short)
-  end
+    case Repo.query("SELECT version()") do
+      {:ok, %{rows: [[v]]}} ->
+        %{status: :ok, message: String.slice(v, 0, 45)}
 
-  # ── TimescaleDB ────────────────────────────────────────────────
+      {:error, e} ->
+        %{status: :error, message: inspect(e)}
+    end
+  rescue
+    e -> err(e)
+  end
 
   defp check_timescaledb do
-    %{rows: [[version]]} =
-      Repo.query!("SELECT extversion FROM pg_extension WHERE extname = 'timescaledb'")
-
-    ok("TimescaleDB #{version}")
+    case TimescaleRepo.health_check() do
+      {:ok, v} -> %{status: :ok, message: v}
+      {:error, e} -> %{status: :error, message: e}
+    end
+  rescue
+    e -> err(e)
   end
-
-  # ── PostGIS ────────────────────────────────────────────────────
 
   defp check_postgis do
-    %{rows: [[version]]} = Repo.query!("SELECT PostGIS_Lib_Version()")
-    ok("PostGIS #{version}")
+    case Repo.query("SELECT default_version FROM pg_available_extensions WHERE name = 'postgis'") do
+      {:ok, %{rows: [[v]]}} -> %{status: :ok, message: "PostGIS #{v}"}
+      _ -> %{status: :error, message: "PostGIS extension not found"}
+    end
+  rescue
+    e -> err(e)
   end
-
-  # ── pgvector ───────────────────────────────────────────────────
-
-  defp check_pgvector do
-    %{rows: [[version]]} =
-      Repo.query!("SELECT extversion FROM pg_extension WHERE extname = 'vector'")
-
-    ok("pgvector #{version}")
-  end
-
-  # ── pg_textsearch (BM25) ───────────────────────────────────────
 
   defp check_pg_textsearch do
-    case Repo.query("SELECT extversion FROM pg_extension WHERE extname = 'pg_textsearch'") do
-      {:ok, %{rows: [[version]]}} ->
-        # Also verify the BM25 index type is accessible
-        Repo.query!("SELECT 1 WHERE EXISTS (
-            SELECT 1 FROM pg_am WHERE amname = 'bm25'
-          )")
-        ok("pg_textsearch #{version} (BM25)")
-
-      {:ok, %{rows: []}} ->
-        warn("pg_textsearch not installed — run: CREATE EXTENSION pg_textsearch")
-
-      {:error, %{postgres: %{code: :undefined_function}}} ->
-        warn("pg_textsearch not loaded — add to shared_preload_libraries")
-
-      {:error, reason} ->
-        error_result("pg_textsearch check failed: #{inspect(reason)}")
+    case Repo.query(
+           "SELECT default_version FROM pg_available_extensions WHERE name = 'pg_textsearch'"
+         ) do
+      {:ok, %{rows: [[v]]}} -> %{status: :ok, message: "PostGIS #{v}"}
+      _ -> %{status: :error, message: "PostGIS extension not found"}
     end
+  rescue
+    e -> err(e)
   end
 
-  # ── Valkey / Redis ─────────────────────────────────────────────
-
-  defp check_valkey do
-    conn = valkey_conn()
-    t0 = System.monotonic_time(:millisecond)
-
-    case Redix.command(conn, ["PING"]) do
-      {:ok, "PONG"} ->
-        latency = System.monotonic_time(:millisecond) - t0
-        ok("#{latency}ms")
-
-      {:error, reason} ->
-        error_result("PING failed: #{inspect(reason)}")
+  defp check_pgvector do
+    case Repo.query("SELECT default_version FROM pg_available_extensions WHERE name = 'vector'") do
+      {:ok, %{rows: [[v]]}} -> %{status: :ok, message: "pgvector #{v}"}
+      _ -> %{status: :error, message: "pgvector extension not found"}
     end
+  rescue
+    e -> err(e)
   end
-
-  # ── ETS ────────────────────────────────────────────────────────
-
-  defp check_ets do
-    count = :ets.all() |> length()
-    ok("#{count} tables")
-  end
-
-  # ── MQTT ───────────────────────────────────────────────────────
 
   defp check_mqtt do
     mqtt_module =
       Application.get_env(
         :universal_enterprise_platform,
         :mqtt_adapter,
-        UniversalEnterprisePlatform.Infrastructure.Messaging.MqttClient
+        MqttClient
       )
 
     case Process.whereis(mqtt_module) do
@@ -217,7 +158,7 @@ defmodule UniversalEnterprisePlatform.Infrastructure.Health.Checker do
       Application.get_env(
         :universal_enterprise_platform,
         :kafka_adapter,
-        UniversalEnterprisePlatform.Infrastructure.Messaging.KafkaClient
+        KafkaClient
       )
 
     case kafka_module.health_check() do
@@ -257,162 +198,106 @@ defmodule UniversalEnterprisePlatform.Infrastructure.Health.Checker do
   # ── MeiliSearch ────────────────────────────────────────────────
 
   defp check_meilisearch do
-    config = Application.get_env(:universal_enterprise_platform, :meilisearch, [])
-    base = config[:url] || "http://localhost:7700"
-    api_key = config[:api_key] || "masterKey"
-
-    headers = [
-      {"Authorization", "Bearer #{api_key}"},
-      {"Content-Type", "application/json"}
-    ]
-
     t0 = System.monotonic_time(:millisecond)
 
-    case Req.get("#{base}/health", headers: headers, receive_timeout: 3_000) do
-      {:ok, %{status: 200, body: %{"status" => "available"}}} ->
+    case MeilisearchAdapter.readiness_check() do
+      {:ok, _msg} ->
         latency = System.monotonic_time(:millisecond) - t0
 
-        # Also get version
-        version_msg =
-          case Req.get("#{base}/version", headers: headers, receive_timeout: 2_000) do
-            {:ok, %{status: 200, body: %{"pkgVersion" => v}}} ->
-              "Meilisearch v#{v} (#{latency}ms)"
+        {:ok, "Meilisearch ready (#{latency}ms)"}
 
-            _ ->
-              "Meilisearch available (#{latency}ms)"
-          end
-
-        ok(version_msg)
-
-      {:ok, %{status: status, body: body}} ->
-        error_result("HTTP #{status}: #{inspect(body)}")
-
-      {:error, %{reason: :econnrefused}} ->
+      {:error, :auth_failed} ->
         %{
           active: false,
-          status: "disabled",
-          message: "Meilisearch not running at #{base}. Start: meilisearch --master-key=masterKey"
+          status: "error",
+          message: "Meilisearch auth failed (invalid API key)"
+        }
+
+      {:error, :unreachable} ->
+        %{
+          active: false,
+          status: "error",
+          message: "Meilisearch not reachable (systemd service likely down)"
+        }
+
+      {:error, :timeout} ->
+        %{
+          active: false,
+          status: "error",
+          message: "Meilisearch timeout"
         }
 
       {:error, reason} ->
-        error_result("#{inspect(reason)}")
+        %{
+          active: false,
+          status: "error",
+          message: "Meilisearch error: #{inspect(reason)}"
+        }
     end
   end
 
-  # ── TigerBeetle ────────────────────────────────────────────────
+  defp check_valkey do
+    case ValkeyAdapter.health_check() do
+      {:ok, ms} -> %{status: :ok, message: "#{ms}ms"}
+      {:error, e} -> %{status: :error, message: inspect(e)}
+    end
+  rescue
+    e -> err(e)
+  end
+
+  defp check_ets do
+    %{status: :ok, message: "#{EtsAdapter.table_size()} entries"}
+  rescue
+    e -> err(e)
+  end
 
   defp check_tigerbeetle do
-    enabled = Application.get_env(:universal_enterprise_platform, :tigerbeetle_enabled, false)
-
-    if enabled do
-      tb_module =
-        Application.get_env(
-          :universal_enterprise_platform,
-          :ledger_adapter,
-          UniversalEnterprisePlatform.Infrastructure.Ledger.TigerBeetleClient
-        )
-
-      case tb_module.health_check() do
-        {:ok, info} -> %{active: true, status: "ok", message: inspect(info)}
-        {:error, reason} -> %{active: true, status: "error", message: inspect(reason)}
+    if Application.get_env(:universal_enterprise_platform, :tigerbeetle_enabled, true) do
+      case TigerBeetleClient.health_check() do
+        {:ok, info} -> %{status: :ok, active: true, message: inspect(info)}
+        {:error, e} -> %{status: :error, active: true, message: inspect(e)}
       end
     else
-      %{
-        active: false,
-        status: "disabled",
-        message: "TigerBeetle disabled. Set :tigerbeetle_enabled, true to enable."
-      }
+      %{status: :disabled, active: false, message: "TigerBeetle disabled"}
     end
+  rescue
+    e -> err(e)
   end
-
-  # ── SpiceDB ────────────────────────────────────────────────────
 
   defp check_spicedb do
-    authz_module =
-      Application.get_env(
-        :universal_enterprise_platform,
-        :authz_adapter,
-        UniversalEnterprisePlatform.Infrastructure.Authorization.SpiceDBClient
-      )
-
-    case authz_module.health_check() do
+    case SpiceDBClient.health_check() do
       {:ok, info} ->
-        %{active: true, status: "ok", message: inspect(info)}
+        %{status: :ok, active: true, message: "schema loaded (#{info.schema_length} chars)"}
 
-      {:error, reason} ->
-        msg = reason |> inspect() |> String.slice(0, 120)
-        %{active: true, status: "error", message: "SpiceDB gRPC error: #{msg}"}
+      {:error, e} ->
+        %{status: :error, active: false, message: e}
     end
+  rescue
+    e -> err(e)
   end
-
-  # ── StarRocks ──────────────────────────────────────────────────
 
   defp check_starrocks do
-    enabled = Application.get_env(:universal_enterprise_platform, :starrocks_enabled, false)
-
-    if enabled do
-      case UniversalEnterprisePlatform.Infrastructure.Repos.StarRocksRepo.query(
-             "SELECT version()"
-           ) do
-        {:ok, %{rows: [[v]]}} -> %{active: true, status: "ok", message: "StarRocks #{v}"}
-        {:error, reason} -> %{active: true, status: "error", message: inspect(reason)}
-      end
-    else
-      %{
-        active: false,
-        status: "disabled",
-        message: "StarRocks not started. Set :starrocks_enabled, true to enable."
-      }
+    case StarRocksRepo.health_check() do
+      {:ok, info} -> %{status: :ok, active: true, message: inspect(info)}
+      {:disabled, msg} -> %{status: :disabled, active: false, message: msg}
+      {:error, e} -> %{status: :error, active: false, message: inspect(e)}
     end
-  end
-
-  # ── Flink CDC ──────────────────────────────────────────────────
-
-  defp check_flink_cdc do
-    config = Application.get_env(:universal_enterprise_platform, :flink, [])
-    base_url = config[:url] || "http://localhost:8081"
-
-    case Req.get("#{base_url}/overview", receive_timeout: 3_000) do
-      {:ok, %{status: 200, body: body}} ->
-        version = Map.get(body, "flink-version", "unknown")
-        jobs = Map.get(body, "jobs-running", 0)
-        %{active: true, status: "ok", message: "Flink #{version} — #{jobs} job(s) running"}
-
-      {:ok, %{status: s}} ->
-        %{active: false, status: "error", message: "HTTP #{s}"}
-
-      {:error, %{reason: :econnrefused}} ->
-        %{active: false, status: "disabled", message: "Flink not running at #{base_url}"}
-
-      {:error, _} ->
-        # If Flink is disabled just show version from config
-        version = config[:version] || "unknown"
-        %{active: false, status: "ok", message: "Flink #{version} (not started)"}
-    end
-  end
-
-  # ── Helpers ────────────────────────────────────────────────────
-
-  defp ok(message), do: %{status: "ok", message: message}
-  defp warn(message), do: %{status: "warn", message: message}
-  defp error_result(m), do: %{status: "error", message: m}
-
-  defp overall_status(results) do
-    statuses = Enum.map(results, fn {_k, v} -> Map.get(v, :status, "ok") end)
-
-    cond do
-      Enum.any?(statuses, &(&1 == "error")) -> "degraded"
-      Enum.any?(statuses, &(&1 == "warn")) -> "warn"
-      true -> "ok"
-    end
-  end
-
-  defp valkey_conn do
-    # Pick from the PartitionSupervisor pool
-    PartitionSupervisor.whereis_name({UniversalEnterprisePlatform.ValkeyPool, self()})
   rescue
-    _ ->
-      # Fallback: try first named connection
-      :valkey_1
+    e -> err(e)
   end
+
+  defp check_flink do
+    case CdcConfig.health_check() do
+      {:ok, info} ->
+        %{status: :ok, active: CdcConfig.enabled?(), message: "Flink #{info.version}"}
+
+      {:error, r} ->
+        status = if CdcConfig.enabled?(), do: :error, else: :disabled
+        %{status: status, active: false, message: r}
+    end
+  rescue
+    e -> err(e)
+  end
+
+  defp err(e), do: %{status: :error, message: Exception.message(e)}
 end
