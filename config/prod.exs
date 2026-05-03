@@ -20,6 +20,10 @@ config :universal_enterprise_platform, UniversalEnterprisePlatformWeb.Endpoint,
     ]
   ]
 
+config :universal_enterprise_platform, :meilisearch,
+  url: "http://127.0.0.1:7700",
+  api_key: "masterKey"
+
 # Configure Swoosh API Client
 config :swoosh, api_client: Swoosh.ApiClient.Req
 

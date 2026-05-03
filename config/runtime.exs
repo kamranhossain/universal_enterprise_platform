@@ -68,6 +68,10 @@ if config_env() == :prod do
     ],
     secret_key_base: secret_key_base
 
+  config :universal_enterprise_platform, :meilisearch,
+    url: System.get_env("MEILI_URL") || "http://127.0.0.1:7700",
+    api_key: System.get_env("MEILI_API_KEY")
+
   # ## SSL Support
   #
   # To get SSL working, you will need to add the `https` key
