@@ -28,6 +28,7 @@ defmodule UniversalEnterprisePlatform.Infrastructure.Health.Checker do
       pg_textsearch: check_pg_textsearch(),
       pgvector: check_pgvector(),
       meilisearch: check_meilisearch(),
+      mqtt: check_mqtt(),
       kafka: check_kafka(),
       valkey: check_valkey(),
       ets: check_ets(),
