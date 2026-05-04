@@ -21,8 +21,8 @@ config :universal_enterprise_platform, UniversalEnterprisePlatformWeb.Endpoint,
   ]
 
 config :universal_enterprise_platform, :meilisearch,
-  url: System.get_env("MEILI_URL") || "http://127.0.0.1:7700",
-  api_key: System.get_env("MEILI_API_KEY")
+  url: System.fetch_env!("MEILI_URL") || "http://127.0.0.1:7700",
+  api_key: System.fetch_env!("MEILI_API_KEY")
 
 # Configure Swoosh API Client
 config :swoosh, api_client: Swoosh.ApiClient.Req

@@ -2,8 +2,8 @@ import Config
 
 # Configure your database
 config :universal_enterprise_platform, UniversalEnterprisePlatform.Infrastructure.Repos.Repo,
-  username: System.get_env("DB_USER") || "postgres",
-  password: System.get_env("DB_PASSWORD") || "postgres",
+  username: System.fetch_env!("DB_USER") || "postgres",
+  password: System.fetch_env!("DB_PASSWORD") || "postgres",
   hostname: "localhost",
   database: "universal_enterprise_platform_dev",
   stacktrace: true,
@@ -13,8 +13,8 @@ config :universal_enterprise_platform, UniversalEnterprisePlatform.Infrastructur
 
 config :universal_enterprise_platform,
        UniversalEnterprisePlatform.Infrastructure.Repos.TimescaleRepo,
-       username: System.get_env("DB_USER") || "postgres",
-       password: System.get_env("DB_PASSWORD") || "postgres",
+       username: System.fetch_env!("DB_USER") || "postgres",
+       password: System.fetch_env!("DB_PASSWORD") || "postgres",
        hostname: "localhost",
        database: "universal_enterprise_platform_ts_dev",
        pool_size: 5
@@ -92,8 +92,8 @@ config :universal_enterprise_platform, UniversalEnterprisePlatformWeb.Endpoint,
   ]
 
 config :universal_enterprise_platform, :meilisearch,
-  url: System.get_env("MEILI_URL") || "http://127.0.0.1:7700",
-  api_key: System.get_env("MEILI_API_KEY")
+  url: System.fetch_env!("MEILI_URL") || "http://127.0.0.1:7700",
+  api_key: System.fetch_env!("MEILI_API_KEY")
 
 # Enable dev routes for dashboard and mailbox
 config :universal_enterprise_platform, dev_routes: true

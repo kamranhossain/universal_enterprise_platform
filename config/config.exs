@@ -32,7 +32,7 @@ config :universal_enterprise_platform, UniversalEnterprisePlatformWeb.Endpoint,
     layout: false
   ],
   pubsub_server: UniversalEnterprisePlatform.PubSub,
-  live_view: [signing_salt: System.get_env("SIGNING_SALT") || "EjbzHTsO"]
+  live_view: [signing_salt: System.fetch_env!("SIGNING_SALT") || "EjbzHTsO"]
 
 # Configure the mailer
 #
