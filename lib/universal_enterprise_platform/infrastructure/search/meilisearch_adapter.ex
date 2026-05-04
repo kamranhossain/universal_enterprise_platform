@@ -1,4 +1,4 @@
-defmodule Platform.Infrastructure.Search.MeilisearchAdapter do
+defmodule UniversalEnterprisePlatform.Infrastructure.Search.MeilisearchAdapter do
   @moduledoc """
   Production-grade Meilisearch adapter.
 
