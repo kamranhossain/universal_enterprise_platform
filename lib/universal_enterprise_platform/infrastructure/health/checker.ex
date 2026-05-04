@@ -122,7 +122,6 @@ defmodule UniversalEnterprisePlatform.Infrastructure.Health.Checker do
 
     case Process.whereis(mqtt_module) do
       nil ->
-        # Try direct TCP check if GenServer not started
         tcp_check_mqtt()
 
       _pid ->
@@ -131,16 +130,26 @@ defmodule UniversalEnterprisePlatform.Infrastructure.Health.Checker do
             host = Map.get(info, :host, "localhost")
             port = Map.get(info, :port, 1883)
             subs = Map.get(info, :subscriptions, 0)
-            ok("Connected to #{host}:#{port}, #{subs} subscriptions")
+
+            %{
+              status: :ok,
+              message: "Connected to #{host}:#{port}, #{subs} subscriptions"
+            }
 
           {:ok, %{adapter: :mock}} ->
-            %{active: false, status: "ok", message: "MQTT mock adapter"}
+            %{status: :ok, message: "MQTT mock adapter"}
 
           {:error, :disconnected} ->
-            warn("MQTT disconnected — broker unreachable or reconnecting")
+            %{
+              status: :degraded,
+              message: "MQTT disconnected — broker unreachable or reconnecting"
+            }
 
           {:error, reason} ->
-            error_result(inspect(reason))
+            %{
+              status: :error,
+              message: inspect(reason)
+            }
         end
     end
   end
@@ -153,12 +162,15 @@ defmodule UniversalEnterprisePlatform.Infrastructure.Health.Checker do
     case :gen_tcp.connect(to_charlist(host), port, [:binary, active: false], 3_000) do
       {:ok, sock} ->
         :gen_tcp.close(sock)
-        warn("Broker reachable at #{host}:#{port} but client not started yet")
+
+        %{
+          status: :degraded,
+          message: "Broker reachable at #{host}:#{port} but client not started yet"
+        }
 
       {:error, reason} ->
         %{
-          active: false,
-          status: "disabled",
+          status: :disabled,
           message: "MQTT broker not reachable at #{host}:#{port} — #{reason}"
         }
     end
@@ -176,13 +188,19 @@ defmodule UniversalEnterprisePlatform.Infrastructure.Health.Checker do
 
     case kafka_module.health_check() do
       {:ok, %{status: :connected, mode: mode, brokers: broker_count, topics: topic_count}} ->
-        ok("#{mode} cluster — #{broker_count} broker(s), #{topic_count} topic(s)")
+        %{
+          status: :ok,
+          message: "#{mode} cluster — #{broker_count} broker(s), #{topic_count} topic(s)"
+        }
 
       {:ok, %{status: :reachable, mode: mode, host: host, port: port}} ->
-        ok("#{mode} broker reachable at #{host}:#{port}")
+        %{
+          status: :ok,
+          message: "#{mode} broker reachable at #{host}:#{port}"
+        }
 
       {:ok, %{adapter: :mock}} ->
-        %{active: false, status: "ok", message: "Kafka mock adapter"}
+        %{status: :ok, message: "Kafka mock adapter"}
 
       {:error, reason} ->
         config = Application.get_env(:universal_enterprise_platform, :kafka, [])
@@ -193,16 +211,16 @@ defmodule UniversalEnterprisePlatform.Infrastructure.Health.Checker do
           {:ok, sock} ->
             :gen_tcp.close(sock)
 
-            warn(
-              "Kafka reachable at #{host}:#{port} but metadata fetch failed — #{inspect(reason)}"
-            )
+            %{
+              status: :degraded,
+              message:
+                "Kafka reachable at #{host}:#{port} but metadata fetch failed — #{inspect(reason)}"
+            }
 
           {:error, _} ->
             %{
-              active: false,
-              status: "disabled",
-              message:
-                "Kafka not reachable at #{host}:#{port}. Start with: brew services start kafka"
+              status: :disabled,
+              message: "Kafka not reachable at #{host}:#{port}. Start your broker"
             }
         end
     end
@@ -217,33 +235,32 @@ defmodule UniversalEnterprisePlatform.Infrastructure.Health.Checker do
       {:ok, _msg} ->
         latency = System.monotonic_time(:millisecond) - t0
 
-        ok("Meilisearch ready (#{latency}ms)")
+        %{
+          status: :ok,
+          message: "Meilisearch ready (#{latency}ms)"
+        }
 
       {:error, :auth_failed} ->
         %{
-          active: false,
-          status: "error",
+          status: :error,
           message: "Meilisearch auth failed (invalid API key)"
         }
 
       {:error, :unreachable} ->
         %{
-          active: false,
-          status: "error",
-          message: "Meilisearch not reachable (systemd service likely down)"
+          status: :error,
+          message: "Meilisearch not reachable (service likely down)"
         }
 
       {:error, :timeout} ->
         %{
-          active: false,
-          status: "error",
+          status: :error,
           message: "Meilisearch timeout"
         }
 
       {:error, reason} ->
         %{
-          active: false,
-          status: "error",
+          status: :error,
           message: "Meilisearch error: #{inspect(reason)}"
         }
     end
