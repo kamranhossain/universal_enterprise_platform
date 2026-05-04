@@ -2,8 +2,8 @@ import Config
 
 # Configure your database
 config :universal_enterprise_platform, UniversalEnterprisePlatform.Infrastructure.Repos.Repo,
-  username: System.fetch_env!("DB_USER") || "postgres",
-  password: System.fetch_env!("DB_PASSWORD") || "postgres",
+  username: "postgres",
+  password: "postgres",
   hostname: "localhost",
   database: "universal_enterprise_platform_dev",
   stacktrace: true,
@@ -13,8 +13,8 @@ config :universal_enterprise_platform, UniversalEnterprisePlatform.Infrastructur
 
 config :universal_enterprise_platform,
        UniversalEnterprisePlatform.Infrastructure.Repos.TimescaleRepo,
-       username: System.fetch_env!("DB_USER") || "postgres",
-       password: System.fetch_env!("DB_PASSWORD") || "postgres",
+       username: "postgres",
+       password: "postgres",
        hostname: "localhost",
        database: "universal_enterprise_platform_ts_dev",
        pool_size: 5
