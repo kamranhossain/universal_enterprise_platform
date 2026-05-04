@@ -22,7 +22,7 @@ defmodule UniversalEnterprisePlatform.Infrastructure.Search.MeilisearchAdapter d
   # ─────────────────────────────────────────────────────────────
 
   defp config do
-    Application.get_env(:platform, :meilisearch, [])
+    Application.get_env(:universal_enterprise_platform, :meilisearch, [])
   end
 
   defp base_url do
