@@ -96,8 +96,8 @@ defmodule UniversalEnterprisePlatform.Infrastructure.Health.Checker do
     case Repo.query(
            "SELECT default_version FROM pg_available_extensions WHERE name = 'pg_textsearch'"
          ) do
-      {:ok, %{rows: [[v]]}} -> %{status: :ok, message: "PostGIS #{v}"}
-      _ -> %{status: :error, message: "PostGIS extension not found"}
+      {:ok, %{rows: [[v]]}} -> %{status: :ok, message: "PG_TextSearch #{v}"}
+      _ -> %{status: :error, message: "PG_TextSearch extension not found"}
     end
   rescue
     e -> err(e)
@@ -217,7 +217,7 @@ defmodule UniversalEnterprisePlatform.Infrastructure.Health.Checker do
       {:ok, _msg} ->
         latency = System.monotonic_time(:millisecond) - t0
 
-        {:ok, "Meilisearch ready (#{latency}ms)"}
+        ok("Meilisearch ready (#{latency}ms)")
 
       {:error, :auth_failed} ->
         %{
