@@ -92,8 +92,8 @@ config :universal_enterprise_platform, UniversalEnterprisePlatformWeb.Endpoint,
   ]
 
 config :universal_enterprise_platform, :meilisearch,
-  url: System.fetch_env!("MEILI_URL") || "http://127.0.0.1:7700",
-  api_key: System.fetch_env!("MEILI_API_KEY")
+  url: "http://127.0.0.1:7700",
+  api_key: "meilisearchsecret123@"
 
 # Enable dev routes for dashboard and mailbox
 config :universal_enterprise_platform, dev_routes: true
