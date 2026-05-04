@@ -12,7 +12,7 @@ defmodule Platform.Infrastructure.Search.MeilisearchAdapter do
   - Just now in check
 
   Index strategy:
-    "#{tenant_short}_#{resource}"
+    #{tenant_short}_#{resource}
   """
 
   require Logger
