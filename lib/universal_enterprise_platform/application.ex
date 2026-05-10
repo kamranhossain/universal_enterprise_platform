@@ -13,7 +13,7 @@ defmodule UniversalEnterprisePlatform.Application do
         Application.get_env(:universal_enterprise_platform, :tigerbeetle_enabled, true)
       )
       |> maybe_add(
-        UniversalEnterprisePlatform.Infrastructure.Clients.StarRocksRepo,
+        UniversalEnterprisePlatform.Infrastructure.Repos.StarRocksRepo,
         Application.get_env(:universal_enterprise_platform, :starrocks_enabled, true)
       )
 

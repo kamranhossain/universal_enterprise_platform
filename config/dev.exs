@@ -23,7 +23,7 @@ config :universal_enterprise_platform,
   starrocks_enabled: true
 
 config :universal_enterprise_platform,
-       UniversalEnterprisePlatform.Infrastructure.Clients.StarRocksRepo,
+       UniversalEnterprisePlatform.Infrastructure.Repos.StarRocksRepo,
        username: "starrocks",
        password: "starrocks123",
        hostname: "127.0.0.1",
