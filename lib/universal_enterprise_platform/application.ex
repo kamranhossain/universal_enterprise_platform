@@ -14,7 +14,7 @@ defmodule UniversalEnterprisePlatform.Application do
       )
       |> maybe_add(
         UniversalEnterprisePlatform.Infrastructure.Clients.StarRocksRepo,
-        Application.get_env(:universal_enterprise_platform, :starrocks_enabled, false)
+        Application.get_env(:universal_enterprise_platform, :starrocks_enabled, true)
       )
 
     opts = [strategy: :one_for_one, name: UniversalEnterprisePlatform.Supervisor]
