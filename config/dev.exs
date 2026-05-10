@@ -20,7 +20,7 @@ config :universal_enterprise_platform,
        pool_size: 5
 
 config :universal_enterprise_platform,
-  starrocks_enabled: false
+  starrocks_enabled: true
 
 config :universal_enterprise_platform, :tigerbeetle_enabled, true
 
