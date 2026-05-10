@@ -22,6 +22,15 @@ config :universal_enterprise_platform,
 config :universal_enterprise_platform,
   starrocks_enabled: true
 
+config :universal_enterprise_platform,
+       UniversalEnterprisePlatform.Infrastructure.Clients.StarRocksRepo,
+       username: "starrocks",
+       password: "starrocks123",
+       hostname: "127.0.0.1",
+       port: 9030,
+       database: "analytics",
+       pool_size: 5
+
 config :universal_enterprise_platform, :tigerbeetle_enabled, true
 
 config :universal_enterprise_platform, :tigerbeetle,
