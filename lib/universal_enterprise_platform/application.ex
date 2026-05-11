@@ -1,8 +1,13 @@
 defmodule UniversalEnterprisePlatform.Application do
   use Application
   require Logger
+  alias UniversalEnterprisePlatform.Infrastructure.Repos.{Repo, TimescaleRepo, StarRocksRepo}
+  alias UniversalEnterprisePlatform.Infrastructure.Cache.{EtsAdapter, ValkeyAdapter}
+  alias UniversalEnterprisePlatform.Infrastructure.Clients.{TigerBeetleClient, SpiceDBClient}
+  alias UniversalEnterprisePlatform.Infrastructure.Flink.CdcConfig
+  alias UniversalEnterprisePlatform.Infrastructure.Messaging.{KafkaClient, MqttClient}
+  alias UniversalEnterprisePlatform.Infrastructure.Search.MeilisearchAdapter
 
-  @impl true
   def start(_type, _args) do
     Logger.info("[UniversalEnterprisePlatform] Starting — env=#{Mix.env()}")
 
@@ -24,11 +29,11 @@ defmodule UniversalEnterprisePlatform.Application do
   defp base_children do
     [
       # ── L1 Infrastructure ──────────────────────────────────────────────────
-      UniversalEnterprisePlatform.Infrastructure.Cache.EtsAdapter,
-      UniversalEnterprisePlatform.Infrastructure.Repos.Repo,
-      UniversalEnterprisePlatform.Infrastructure.Repos.TimescaleRepo,
-      UniversalEnterprisePlatform.Infrastructure.Messaging.MqttClient,
-      UniversalEnterprisePlatform.Infrastructure.Messaging.KafkaClient,
+      EtsAdapter,
+      Repo,
+      TimescaleRepo,
+      MqttClient,
+      KafkaClient,
       valkey_pool_spec(),
       {Phoenix.PubSub, name: Platform.PubSub},
       {Finch, name: UniversalEnterprisePlatform.Finch},

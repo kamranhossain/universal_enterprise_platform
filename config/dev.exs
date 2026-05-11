@@ -41,6 +41,8 @@ config :universal_enterprise_platform, :spicedb,
   endpoint: "127.0.0.1:50051",
   preshared_key: "secret123"
 
+config :universal_enterprise_platform, :kafka_enabled, true
+
 # For development, we disable any cache and enable
 # debugging and code reloading.
 #
