@@ -14,11 +14,11 @@ defmodule UniversalEnterprisePlatform.Application do
     children =
       base_children()
       |> maybe_add(
-        UniversalEnterprisePlatform.Infrastructure.Clients.TigerBeetleClient,
+        TigerBeetleClient,
         Application.get_env(:universal_enterprise_platform, :tigerbeetle_enabled, true)
       )
       |> maybe_add(
-        UniversalEnterprisePlatform.Infrastructure.Repos.StarRocksRepo,
+        StarRocksRepo,
         Application.get_env(:universal_enterprise_platform, :starrocks_enabled, true)
       )
 
