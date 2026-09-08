@@ -20,6 +20,12 @@ config :universal_enterprise_platform, :tigerbeetle,
   cluster_id: 0,
   addresses: ["127.0.0.1:3001"]
 
+# Run `mix help test` for more information.
+config :universal_enterprise_platform, UniversalEnterprisePlatform.Infrastructure.Repos.Repo,
+  username: "postgresql",
+  password: "postgresql",
+  hostname: "localhost"
+
 # Configure the endpoint
 config :universal_enterprise_platform, UniversalEnterprisePlatformWeb.Endpoint,
   url: [host: "localhost"],
